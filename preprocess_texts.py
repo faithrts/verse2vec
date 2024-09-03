@@ -45,10 +45,10 @@ def poetry_foundation():
 
 def remove_backslash_breaks(text):
     # replace "[text]\n[text]" with "[text] [text]"
-    text = re.sub(text, '(?<=[A-Za-z])(\\[[nr])+(?=[A-Za-z])', ' ')
+    text = re.sub('(?<=[A-Za-z])(\\[[nr])+(?=[A-Za-z])', ' ', text)
 
     # replace \n or \r in "[text] \n[text]" or "[text]\n [text]" or other with empty string
-    text = re.sub(text, '(\\[nr])+', '')
+    text = re.sub('(\\[nr])+', '', text)
 
     return text
 
