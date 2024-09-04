@@ -78,4 +78,7 @@ if __name__ == "__main__":
 
         poetry_df.at[index, 'TOKENS'] = cleaned_tokens
 
-    poetry_df.to_csv(f'{path_to_data_folder}/poetry_tokens.csv')
+    # keep only sentences with at least 2 tokens
+    poetry_df = poetry_df[poetry_df.TOKENS.map(len) >= 2]
+
+    poetry_df.to_csv(f'{path_to_data_folder}/sentences_poetry_tokens.csv')

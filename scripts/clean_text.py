@@ -39,9 +39,11 @@ def poki():
 
     poki_df = poki_df[['TEXT']]
 
-    # split_sentences
+    # split by sentences
+    poki_sentences = split_sentences(poki_df)
+    poki_sentences_df = pd.DataFrame(poki_sentences, columns = ['TEXT'])
 
-    return poki_df
+    return poki_sentences_df
 
 def perc():
     # data from https://data.mendeley.com/datasets/n9vbc8g9cx/1
@@ -49,7 +51,12 @@ def perc():
     perc_df.rename(columns = {'Poem': 'TEXT'}, inplace = True)
 
     perc_df = perc_df[['TEXT']]
-    return perc_df
+
+    # split by sentences
+    perc_sentences = split_sentences(perc_df, source = 'perc')
+    perc_sentences_df = pd.DataFrame(perc_sentences, columns = ['TEXT'])
+
+    return perc_sentences_df
 
 def poetry_foundation():
     # data from https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems
@@ -57,11 +64,19 @@ def poetry_foundation():
     poetry_foundation_df.rename(columns = {'Poem': 'TEXT'}, inplace = True)
 
     poetry_foundation_df = poetry_foundation_df[['TEXT']]
-    return poetry_foundation_df
+
+    # split by sentences
+    poetry_foundation_sentences = split_sentences(poetry_foundation_df, source = 'poetry_foundation')
+    poetry_foundation__sentences_df = pd.DataFrame(poetry_foundation_sentences, columns = ['TEXT'])
+
+    return poetry_foundation__sentences_df
 
 # ------------------------------- reformatting df ------------------------------- #
 
-def split_sentences(df, focus_col = 'TEXT', default = True, source = ''):
+def split_sentences(df, focus_col = 'TEXT', source = ''):
+
+    default = (source == '')
+
     all_sentences = []
 
     for index, row in df.iterrows():
@@ -72,16 +87,25 @@ def split_sentences(df, focus_col = 'TEXT', default = True, source = ''):
             all_sentences += nltk.sent_tokenize(cur_text)
         else:
             # invoke source-specific sentence splitter
-            all_sentences += eval(f'split_{source}')
+
+            all_sentences += eval(f'split_{source}(cur_text)')
+
+    return pd.DataFrame(all_sentences, columns = ['TEXT'])
 
 def split_perc(text):
-    return [phrase for phrase in (text.split('\n')) if phrase != '']
+    sentences = [phrase for phrase in (text.split('\n')) if phrase != '']
+    sentences = [phrase for phrase in sentences if len(phrase.split(' ')) > 2 and phrase != ' ']
+
+    return sentences
 
 def split_poetry_foundation(text):
     stanzas = [phrase for phrase in (text.split('\r\n\r\n \r\n\r\n'))]
     cleaned_stanzas = [re.sub('\r\n\r\n', ' ', phrase) for phrase in stanzas]
     stanzas_by_sentence = [nltk.sent_tokenize(phrase) for phrase in cleaned_stanzas]
-    return [sentence for stanza in stanzas_by_sentence for sentence in stanza]
+    flattened = [sentence for stanza in stanzas_by_sentence for sentence in stanza if sentence != ' ']
+    sentences = [sentence for sentence in flattened if len(sentence.split(' ')) > 2]
+    
+    return sentences
 
 # ------------------------------- cleaning text ------------------------------- #
 
@@ -115,6 +139,8 @@ if __name__ == '__main__':
 
         # removes rows comprised of nothing (before, they were \n\r\n or some combo)
         cur_df.replace('', np.nan, inplace = True)
+        cur_df.replace(' ', np.nan, inplace = True)
+        cur_df.replace('.', np.nan, inplace = True)
         cur_df.dropna(inplace = True, ignore_index = True)
 
         # saves to csv
