@@ -81,4 +81,7 @@ if __name__ == "__main__":
     # keep only sentences with at least 2 tokens
     poetry_df = poetry_df[poetry_df.TOKENS.map(len) >= 2]
 
+    # reset index
+    poetry_df.reset_index(drop = True, inplace = True)
+
     poetry_df.to_csv(f'{path_to_data_folder}/sentences_poetry_tokens.csv')

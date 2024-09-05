@@ -4,7 +4,7 @@ import gensim
 from gensim.models import Word2Vec
 
 def train_model(tokens):
-    model = Word2Vec(sentences = tokens, seed = 0, workers = 1, sg = 0, min_count = 1)
+    model = Word2Vec(sentences = tokens, seed = 0, workers = 1, sg = 0, min_count = 2)
     return model
 
 if __name__ == '__main__':
