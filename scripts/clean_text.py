@@ -112,10 +112,10 @@ def split_poetry_foundation(text):
 def remove_backslash_breaks(text):
 
     # replace "[text]\n[text]" with "[text] [text]"
-    text = re.sub('(?<=[A-Za-z])(\n|\r|\t)+(?=[A-Za-z])', ' ', text)
+    text = re.sub('(?<=[,A-Za-z])(\n|\r|\\\\t)+(?=[,A-Za-z])', ' ', text)
 
     # replace \n or \r in "[text] \n[text]" or "[text]\n [text]" or other with empty string
-    text = re.sub('(\n|\r|\t)+', '', text)
+    text = re.sub('(\n|\r|\\\\t)+', '', text)
 
     return text
 
