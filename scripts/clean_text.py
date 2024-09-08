@@ -25,6 +25,7 @@ def standardize_df(df, text_col_name):
 
     return df
 
+""" lines of poetry """
 def gutenberg():
     # data from https://huggingface.co/datasets/google-research-datasets/poem_sentiment
     test = pd.read_parquet(f'{path_to_data_folder}/gutenberg/test-00000-of-00001.parquet', engine='pyarrow').set_index('id')
@@ -36,44 +37,60 @@ def gutenberg():
 
     return gutenberg_df
 
+""" lines of poetry """
 def english_pcd():
     pcd_df = pd.read_csv(f'{path_to_data_folder}/english_pcd/merged_data.csv', index_col = 0)
     pcd_df = standardize_df(pcd_df, 'Verse')
 
     return pcd_df
 
+""" entire poems by kids """
 def poki():
     # data from https://github.com/whipson/PoKi-Poems-by-Kids/tree/master
     poki_df = pd.read_csv(f'{path_to_data_folder}/poki/poki.csv')
     poki_df = standardize_df(poki_df, 'text')
 
-    # split by sentences
-    poki_sentences_df = split_sentences(poki_df)
+    # dont split by stanzas or sentences
+    # poki_sentences_df = split_sentences(poki_df)
 
-    return poki_sentences_df
+    return poki_df
 
+""" entire poems """
 def perc():
     # data from https://data.mendeley.com/datasets/n9vbc8g9cx/1
     perc_df = pd.read_csv(f'{path_to_data_folder}/perc/PERC_mendelly.csv')
     perc_df = standardize_df(perc_df, 'Poem')
 
     # split by sentences
-    perc_sentences_df = split_sentences(perc_df, source = 'perc')
+    perc_df = split_stanzas(perc_df, source = 'perc')
 
-    return perc_sentences_df
+    return perc_df
 
+""" entire poems """
 def poetry_foundation():
     # data from https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems
     poetry_foundation_df = pd.read_csv(f'{path_to_data_folder}/poetry_foundation/PoetryFoundationData.csv')
     poetry_foundation_df = standardize_df(poetry_foundation_df, 'Poem')
     
     # split by sentences
-    poetry_foundation_sentences_df = split_sentences(poetry_foundation_df, source = 'poetry_foundation')
+    poetry_foundation_df = split_stanzas(poetry_foundation_df, source = 'poetry_foundation')
 
-    return poetry_foundation_sentences_df
+    return poetry_foundation_df
 
 # ------------------------------- reformatting df ------------------------------- #
 
+""" splits text into stanzas based on source """
+def split_stanzas(df, focus_col = 'TEXT', source = ''):
+    all_stanzas = []
+
+    for index, row in df.iterrows():
+        cur_text = row[focus_col]
+
+        all_stanzas += eval(f'split_stanzas_{source}(cur_text)')
+
+    return pd.DataFrame(all_stanzas, columns = ['TEXT'])
+
+""" splits text into sentences based on source """
 def split_sentences(df, focus_col = 'TEXT', source = ''):
 
     default = (source == '')
@@ -88,24 +105,31 @@ def split_sentences(df, focus_col = 'TEXT', source = ''):
             all_sentences += nltk.sent_tokenize(cur_text)
         else:
             # invoke source-specific sentence splitter
-            all_sentences += eval(f'split_{source}(cur_text)')
+            all_sentences += eval(f'split_sentences_{source}(cur_text)')
 
     return pd.DataFrame(all_sentences, columns = ['TEXT'])
 
-def split_perc(text):
-    sentences = [phrase for phrase in (text.split('\n')) if phrase != '']
-    sentences = [phrase for phrase in sentences if len(phrase.split(' ')) > 2 and phrase != ' ']
+def split_perc(text, split_into_sentences = False):
 
-    return sentences
+    if split_into_sentences:
+        sentences = [phrase for phrase in (text.split('\n')) if phrase != '']
+        text_splits = [phrase for phrase in sentences if len(phrase.split(' ')) > 2 and phrase != ' ']
+    else:
+        stanzas = [re.sub('\n', ' ', phrase) for phrase in (text.split('\n\n')) if phrase != '']
+        text_splits = stanzas
 
-def split_poetry_foundation(text):
-    stanzas = [phrase for phrase in (text.split('\r\n\r\n \r\n\r\n'))]
-    cleaned_stanzas = [re.sub('\r\n\r\n', ' ', phrase) for phrase in stanzas]
-    stanzas_by_sentence = [nltk.sent_tokenize(phrase) for phrase in cleaned_stanzas]
-    flattened = [sentence for stanza in stanzas_by_sentence for sentence in stanza if sentence != ' ']
-    sentences = [sentence for sentence in flattened if len(sentence.split(' ')) > 2]
+    return text_splits
+
+def split_poetry_foundation(text, split_into_sentences = False):
+    stanzas = [re.sub('\r\n\r\n', ' ', phrase) for phrase in (text.split('\r\n\r\n \r\n\r\n'))]
+    text_splits = stanzas
+
+    if split_into_sentences:
+        stanzas_by_sentence = [nltk.sent_tokenize(phrase) for phrase in stanzas]
+        sentences = [sentence for stanza in stanzas_by_sentence for sentence in stanza if sentence != ' ' and len(sentence.split(' ')) > 2]
+        text_splits = sentences
     
-    return sentences
+    return text_splits
 
 # ------------------------------- cleaning text ------------------------------- #
 
@@ -116,6 +140,9 @@ def remove_backslash_breaks(text):
 
     # replace \n or \r in "[text] \n[text]" or "[text]\n [text]" or other with empty string
     text = re.sub('(\n|\r|\\\\t)+', '', text)
+
+    # replace instances of <br>
+    text = re.sub('(<br>|<br|</br)', '', text)
 
     return text
 
