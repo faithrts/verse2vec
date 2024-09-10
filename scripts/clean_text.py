@@ -61,7 +61,7 @@ def perc():
     perc_df = pd.read_csv(f'{path_to_data_folder}/perc/PERC_mendelly.csv')
     perc_df = standardize_df(perc_df, 'Poem')
 
-    # split by sentences
+    # split by stanzas
     perc_df = split_stanzas(perc_df, source = 'perc')
 
     return perc_df
@@ -72,7 +72,7 @@ def poetry_foundation():
     poetry_foundation_df = pd.read_csv(f'{path_to_data_folder}/poetry_foundation/PoetryFoundationData.csv')
     poetry_foundation_df = standardize_df(poetry_foundation_df, 'Poem')
     
-    # split by sentences
+    # split by stanzas
     poetry_foundation_df = split_stanzas(poetry_foundation_df, source = 'poetry_foundation')
 
     return poetry_foundation_df
@@ -86,7 +86,7 @@ def split_stanzas(df, focus_col = 'TEXT', source = ''):
     for index, row in df.iterrows():
         cur_text = row[focus_col]
 
-        all_stanzas += eval(f'split_stanzas_{source}(cur_text)')
+        all_stanzas += eval(f'split_{source}(cur_text)')
 
     return pd.DataFrame(all_stanzas, columns = ['TEXT'])
 
@@ -105,7 +105,7 @@ def split_sentences(df, focus_col = 'TEXT', source = ''):
             all_sentences += nltk.sent_tokenize(cur_text)
         else:
             # invoke source-specific sentence splitter
-            all_sentences += eval(f'split_sentences_{source}(cur_text)')
+            all_sentences += eval(f'split_sentences_{source}(cur_text, split_into_sentences = True)')
 
     return pd.DataFrame(all_sentences, columns = ['TEXT'])
 

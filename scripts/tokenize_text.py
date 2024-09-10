@@ -1,6 +1,7 @@
 import pandas as pd
 import nltk
 import tqdm
+import regex as re
 
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -48,6 +49,9 @@ def tokenize_and_lemmatize(text):
     tokens = [token for token in tokens if len(token) > 1]
     tokens = remove_stopwords(tokens)
 
+    # removes tokens with non-alpha characters except those with - sandwiched between two words
+    tokens = [token for token in tokens if token.isalpha() or re.sub("(?<=[a-z])(-)(?=[a-z])", '', token).isalpha()]
+
     tokens_and_tags = nltk.pos_tag(tokens)
 
     # lemmatization 
@@ -84,4 +88,4 @@ if __name__ == "__main__":
     # reset index
     poetry_df.reset_index(drop = True, inplace = True)
 
-    poetry_df.to_csv(f'{path_to_data_folder}/sentences_poetry_tokens.csv')
+    poetry_df.to_csv(f'{path_to_data_folder}/splits_poetry_tokens.csv')

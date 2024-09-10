@@ -14,5 +14,6 @@ This repo exists to train a word2vec model on different poetry datasets, yieldin
 2. Add list of sentences as new entries in dataframes [DONE]
 3. Remove duplicate poems [DONE]
 4. Check why \t\t\t\t\t\t\t isn't being removed in clean_text.py ??? [DONE]
-5. Find other instances of malformed data [IN PROGRESS -> exploring_datasets.ipynb]
-6. Re-tokenize as lines, stanzas, entire poems [IN PROGRESS -> clean_text.py]
+5. Find other instances of malformed data [DONE -> check this in exploring_datasets.ipynb]
+6. Re-tokenize as lines, stanzas, entire poems [DONE -> check this]
+7. Test word vectors
