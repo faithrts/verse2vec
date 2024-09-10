@@ -15,7 +15,7 @@ from tqdm import tqdm
 # ------------------------------- global variables ------------------------------- #
 
 lemmatizer = WordNetLemmatizer()
-path_to_data_folder = '../data'
+from clean_text import path_to_data_folder, list_of_sources
 
 # ------------------------------- collecting data ------------------------------- #
 
@@ -57,8 +57,9 @@ def tokenize_and_lemmatize(text):
     # lemmatization 
     cleaned_tokens = []
     for token, tag in tokens_and_tags:
+        # don't lemmatize if we dont have a wordnet tag (otheriwse "us" is lemmatized as "u")
         if tag[0] not in nltk_to_wn:
-            cleaned_tokens.append(lemmatizer.lemmatize(token))
+            cleaned_tokens.append(token)
         else:
             wn_tag = nltk_to_wn[tag[0]]
             cleaned_tokens.append(lemmatizer.lemmatize(token, wn_tag))
@@ -69,7 +70,7 @@ def tokenize_and_lemmatize(text):
 
 if __name__ == "__main__":
 
-    list_of_sources = ['gutenberg', 'english_pcd', 'poki', 'perc', 'poetry_foundation']
+    list_of_sources = ['english_pcd', 'gutenberg', 'perc', 'poetry_foundation', 'poki']
 
     poetry_df = find_and_combine_data(list_of_sources)
 

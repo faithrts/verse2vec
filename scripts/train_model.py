@@ -9,10 +9,12 @@ def train_model(tokens):
 
 if __name__ == '__main__':
 
-    poetry_df = pd.read_csv('../data/sentences_poetry_tokens.csv', index_col = 0)
+    subset = 'splits'
+
+    poetry_df = pd.read_csv(f'../data/{subset}_poetry_tokens.csv', index_col = 0)
     poetry_df['TOKENS'] = [eval(tokens) for tokens in poetry_df['TOKENS']]
 
     tokens = poetry_df['TOKENS']
     model = train_model(tokens)
 
-    model.save('../models/sentences_tokens_word2vec.model')
+    model.save(f'../models/{subset}_tokens_word2vec.model')

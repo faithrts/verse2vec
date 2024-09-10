@@ -9,6 +9,7 @@ from tqdm import tqdm
 # --------------------------- global variables --------------------------- #
 
 path_to_data_folder = '../data'
+list_of_sources = ['english_pcd', 'gutenberg', 'perc', 'poetry_foundation', 'poki']
 
 # ------------------------------- datasets ------------------------------- #
 
@@ -26,6 +27,13 @@ def standardize_df(df, text_col_name):
     return df
 
 """ lines of poetry """
+def english_pcd():
+    pcd_df = pd.read_csv(f'{path_to_data_folder}/english_pcd/merged_data.csv', index_col = 0)
+    pcd_df = standardize_df(pcd_df, 'Verse')
+
+    return pcd_df
+
+""" lines of poetry """
 def gutenberg():
     # data from https://huggingface.co/datasets/google-research-datasets/poem_sentiment
     test = pd.read_parquet(f'{path_to_data_folder}/gutenberg/test-00000-of-00001.parquet', engine='pyarrow').set_index('id')
@@ -36,24 +44,6 @@ def gutenberg():
     gutenberg_df = standardize_df(gutenberg_df, 'verse_text')
 
     return gutenberg_df
-
-""" lines of poetry """
-def english_pcd():
-    pcd_df = pd.read_csv(f'{path_to_data_folder}/english_pcd/merged_data.csv', index_col = 0)
-    pcd_df = standardize_df(pcd_df, 'Verse')
-
-    return pcd_df
-
-""" entire poems by kids """
-def poki():
-    # data from https://github.com/whipson/PoKi-Poems-by-Kids/tree/master
-    poki_df = pd.read_csv(f'{path_to_data_folder}/poki/poki.csv')
-    poki_df = standardize_df(poki_df, 'text')
-
-    # dont split by stanzas or sentences
-    # poki_sentences_df = split_sentences(poki_df)
-
-    return poki_df
 
 """ entire poems """
 def perc():
@@ -76,6 +66,17 @@ def poetry_foundation():
     poetry_foundation_df = split_stanzas(poetry_foundation_df, source = 'poetry_foundation')
 
     return poetry_foundation_df
+
+""" entire poems by kids """
+def poki():
+    # data from https://github.com/whipson/PoKi-Poems-by-Kids/tree/master
+    poki_df = pd.read_csv(f'{path_to_data_folder}/poki/poki.csv')
+    poki_df = standardize_df(poki_df, 'text')
+
+    # dont split by stanzas or sentences
+    # poki_sentences_df = split_sentences(poki_df)
+
+    return poki_df
 
 # ------------------------------- reformatting df ------------------------------- #
 
@@ -153,9 +154,8 @@ def clean_text(text):
 # ------------------------------- main ------------------------------- #
 
 if __name__ == '__main__':
-
-    list_of_sources = ['gutenberg', 'english_pcd', 'poki', 'perc', 'poetry_foundation']
     
+    # list_of_sources = global variable
     for cur_source in list_of_sources:
 
         # calls function that creates dataframe from raw dataset
